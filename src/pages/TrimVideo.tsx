@@ -1,19 +1,21 @@
-import { useState } from "react";
-import VideoTrimTimeline from "../components/VideoTrimTimeline";
+import { useEffect, useState } from "react";
+import VideoTrimTimeline from "../components/TrimVideo/VideoTrimTimeline";
 import { requestRender } from "../services/renderService";
-import { timeToSeconds } from "../utils/timeUtils";
+import { toast } from "react-toastify";
+import { readSettings } from "../services/settingsService";
+import OutputSettings from "../components/TrimVideo/OutputSettings";
+import FilePicker from "../components/TrimVideo/FilePicker";
+import type { VideoOutputFormat } from "../types/VideoOutputFormat";
 
-type OutputFormat = "mp4" | "mkv" | "mov" | "webm";
 
 interface TrimFormData {
     file: File | null;
     startTime: string;
     endTime: string;
     outputName: string;
-    outputFormat: OutputFormat;
+    outputFormat: VideoOutputFormat;
     outputPath: string;
 }
-
 export default function TrimVideo() {
     const [form, setForm] = useState<TrimFormData>({
         file: null,
@@ -26,6 +28,14 @@ export default function TrimVideo() {
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [baseInput, setBaseInput] = useState("");
+    const [baseOutput, setBaseOutput] = useState("");
+
+    useEffect(() => {
+        const settings = readSettings();
+        setBaseInput(settings.BASE_INPUT);
+        setBaseOutput(settings.BASE_OUTPUT);
+    }, []);
 
     const handleChange = <K extends keyof TrimFormData>(
         key: K,
@@ -38,18 +48,18 @@ export default function TrimVideo() {
         e.preventDefault();
         setError(null);
 
+        if (!baseInput || !baseOutput) {
+            toast.error("Configure INPUT and OUTPUT folder in Settings first");
+            return;
+        }
+
         if (!form.file) {
             setError("Please select a video file.");
             return;
         }
 
-        if (!form.startTime) {
-            setError("Start time is required.");
-            return;
-        }
-
-        if (!form.endTime) {
-            setError("End time is required.");
+        if (!form.startTime || !form.endTime) {
+            setError("Start and end times are required.");
             return;
         }
 
@@ -58,137 +68,63 @@ export default function TrimVideo() {
             return;
         }
 
-        if (!form.outputPath.trim()) {
-            setError("Output path is required.");
-            return;
-        }
-
-        const startSeconds = timeToSeconds(form.startTime);
-        const endSeconds = timeToSeconds(form.endTime);
-
-        if (endSeconds <= startSeconds) {
+        if (form.endTime <= form.startTime) {
             setError("End time must be greater than start time.");
             return;
         }
 
-        const outputFile = `${form.outputPath.replace(/\/$/, "")}/${form.outputName}.${form.outputFormat}`;
-
         try {
             setIsSubmitting(true);
 
-            await requestRender({
-                input: form.file.name, // see architecture note above
+            const result = await requestRender({
+                input: `${baseInput}/${form.file.name}`,
                 start: form.startTime,
                 end: form.endTime,
-                output: outputFile
+                output: `${baseOutput}/${form.outputName}`,
+                format: form.outputFormat,
             });
 
-        } catch (err) {
-            setError("Render failed.");
+
+            toast.success("Video trimmed successfully!");
+            console.log("Render complete:", result);
+
+        } catch (err: any) {
+            setError(err?.message || "Render failed.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-            <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-xl bg-white shadow-lg rounded-xl p-8 space-y-6"
-            >
-                <h2 className="text-2xl font-semibold text-gray-800">
-                    Trim Video
-                </h2>
+            <form onSubmit={handleSubmit} className="w-full max-w-xl bg-white shadow-lg rounded-xl p-8 space-y-6">
+                <h2 className="text-2xl font-semibold text-gray-800">Trim Video</h2>
 
-                {/* File */}
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700">
-                        Input File
-                    </label>
-                    <input
-                        type="file"
-                        accept="video/*"
-                        className="block w-full text-sm text-gray-600
-                       file:mr-4 file:py-2 file:px-4
-                       file:rounded-md file:border-0
-                       file:text-sm file:font-semibold
-                       file:bg-blue-50 file:text-blue-700
-                       hover:file:bg-blue-100"
-                        onChange={(e) =>
-                            handleChange("file", e.target.files?.[0] ?? null)
-                        }
-                    />
-                </div>
-
-                <VideoTrimTimeline
-                    file={form.file}
-                    onChange={(start, end) => {
-                        handleChange("startTime", start.toString());
-                        handleChange("endTime", end.toString());
-                    }}
-                />
+                <FilePicker file={form.file} disabled={isSubmitting} onFileSelected={(file) => handleChange("file", file)} />
 
                 {form.file && (
                     <>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-gray-700">
-                                Output Name
-                            </label>
-                            <input
-                                type="text"
-                                value={form.outputName}
-                                onChange={(e) =>
-                                    handleChange("outputName", e.target.value)
-                                }
-                                className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
+                        <VideoTrimTimeline
+                            file={form.file}
+                            onChange={(start, end) => {
+                                handleChange("startTime", start.toString());
+                                handleChange("endTime", end.toString());
+                            }}
+                            disabled={isSubmitting}
+                        />
 
-                        {/* Format + Path */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium text-gray-700">
-                                    Output Format
-                                </label>
-                                <select
-                                    value={form.outputFormat}
-                                    onChange={(e) =>
-                                        handleChange(
-                                            "outputFormat",
-                                            e.target.value as OutputFormat
-                                        )
-                                    }
-                                    className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="mp4">mp4</option>
-                                    <option value="mkv">mkv</option>
-                                    <option value="mov">mov</option>
-                                    <option value="webm">webm</option>
-                                </select>
-                            </div>
+                        <OutputSettings
+                            outputName={form.outputName}
+                            outputFormat={form.outputFormat}
+                            disabled={isSubmitting}
+                            onChange={(field, value) => handleChange(field, value as any)}
+                        />
 
-                            <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium text-gray-700">
-                                    Output Path
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="/outputs"
-                                    value={form.outputPath}
-                                    onChange={(e) =>
-                                        handleChange("outputPath", e.target.value)
-                                    }
-                                    className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                        </div>
+                        {error && (<div className="text-red-600 text-sm font-medium">{error}</div>)}
 
-                        <button
-                            type="submit"
-                            className="w-full bg-blue-600 text-white font-medium py-2 rounded-md hover:bg-blue-700 transition"
-                        >
-                            Trim
+                        <button type="submit" disabled={isSubmitting}
+                            className="w-full bg-blue-600 text-white font-medium py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed" >
+                            {isSubmitting ? "Processing..." : "Trim"}
                         </button>
                     </>
                 )}
