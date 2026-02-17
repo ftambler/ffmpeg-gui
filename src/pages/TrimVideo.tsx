@@ -5,8 +5,8 @@ import { toast } from "react-toastify";
 import { readSettings } from "../services/settingsService";
 import OutputSettings from "../components/TrimVideo/OutputSettings";
 import FilePicker from "../components/TrimVideo/FilePicker";
+import TrimActionPanel from "../components/TrimVideo/TrimActionPanel";
 import type { VideoOutputFormat } from "../types/VideoOutputFormat";
-
 
 interface TrimFormData {
     file: File | null;
@@ -16,6 +16,7 @@ interface TrimFormData {
     outputFormat: VideoOutputFormat;
     outputPath: string;
 }
+
 export default function TrimVideo() {
     const [form, setForm] = useState<TrimFormData>({
         file: null,
@@ -75,7 +76,7 @@ export default function TrimVideo() {
 
         try {
             setIsSubmitting(true);
-
+            
             const result = await requestRender({
                 input: `${baseInput}/${form.file.name}`,
                 start: form.startTime,
@@ -84,10 +85,9 @@ export default function TrimVideo() {
                 format: form.outputFormat,
             });
 
-
-            toast.success("Video trimmed successfully!");
+            toast.dark("Video trimmed successfully!");
+            toast.dark(`Saved: ${baseOutput}/${form.file.name}`);
             console.log("Render complete:", result);
-
         } catch (err: any) {
             setError(err?.message || "Render failed.");
         } finally {
@@ -96,38 +96,44 @@ export default function TrimVideo() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-            <form onSubmit={handleSubmit} className="w-full max-w-xl bg-white shadow-lg rounded-xl p-8 space-y-6">
-                <h2 className="text-2xl font-semibold text-gray-800">Trim Video</h2>
+        <div className="h-full min-h-0 bg-slate-950 text-slate-200 p-4 md:p-6 overflow-y-auto rounded-xl">
+            <form
+                onSubmit={handleSubmit}
+                className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6"
+            >
+                <div className="flex flex-col gap-4 lg:gap-6">
+                    <FilePicker
+                        file={form.file}
+                        disabled={isSubmitting}
+                        onFileSelected={(file) => handleChange("file", file)}
+                    />
 
-                <FilePicker file={form.file} disabled={isSubmitting} onFileSelected={(file) => handleChange("file", file)} />
+                    <VideoTrimTimeline
+                        file={form.file}
+                        onChange={(start, end) => {
+                            handleChange("startTime", start.toString());
+                            handleChange("endTime", end.toString());
+                        }}
+                        disabled={isSubmitting}
+                    />
+                </div>
 
-                {form.file && (
-                    <>
-                        <VideoTrimTimeline
-                            file={form.file}
-                            onChange={(start, end) => {
-                                handleChange("startTime", start.toString());
-                                handleChange("endTime", end.toString());
-                            }}
-                            disabled={isSubmitting}
-                        />
+                <div className="flex flex-col gap-4 lg:gap-6">
+                    <OutputSettings
+                        outputName={form.outputName}
+                        outputFormat={form.outputFormat}
+                        disabled={isSubmitting}
+                        onChange={(field, value) =>
+                            handleChange(field, value as TrimFormData[typeof field])
+                        }
+                    />
 
-                        <OutputSettings
-                            outputName={form.outputName}
-                            outputFormat={form.outputFormat}
-                            disabled={isSubmitting}
-                            onChange={(field, value) => handleChange(field, value as any)}
-                        />
-
-                        {error && (<div className="text-red-600 text-sm font-medium">{error}</div>)}
-
-                        <button type="submit" disabled={isSubmitting}
-                            className="w-full bg-blue-600 text-white font-medium py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed" >
-                            {isSubmitting ? "Processing..." : "Trim"}
-                        </button>
-                    </>
-                )}
+                    <TrimActionPanel
+                        error={error}
+                        disabled={isSubmitting}
+                        submitLabel={isSubmitting ? "Processing..." : "Run Trim"}
+                    />
+                </div>
             </form>
         </div>
     );

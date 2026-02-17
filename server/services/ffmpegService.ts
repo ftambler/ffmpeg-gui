@@ -1,14 +1,21 @@
 import { spawn } from "child_process";
 
-export function renderVideo(options: any): Promise<string> {
+export function renderVideo(options: {
+    input: string;
+    start: string;
+    end: string;
+    output: string;
+}): Promise<string> {
     return new Promise((resolve, reject) => {
         const ffmpeg = spawn("ffmpeg", [
-            "-i",
-            options.input,
-            "-ss",
-            options.start,
-            "-to",
-            options.end,
+            "-ss", options.start,
+            "-i", options.input,
+            "-to", options.end,
+            "-c:v", "libx264",
+            "-c:a", "aac",
+            "-preset", "medium",
+            "-crf", "18",
+            "-y",
             options.output
         ]);
 
