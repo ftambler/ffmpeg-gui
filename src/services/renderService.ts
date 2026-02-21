@@ -1,13 +1,13 @@
 export async function requestRender(data: {
-  input: string,
+  inputFile: string,
   start: string;
   end: string;
-  output: string;
+  outputFile: string;
   format: string;
 }) {
-  const normalizedOutput = data.output.toLowerCase().endsWith(`.${data.format.toLowerCase()}`)
-    ? data.output
-    : `${data.output}.${data.format}`;
+  const normalizedOutput = data.outputFile.toLowerCase().endsWith(`.${data.format.toLowerCase()}`)
+    ? data.outputFile
+    : `${data.outputFile}.${data.format}`;
 
   const response = await fetch("http://localhost:3001/api/render", {
     method: "POST",
@@ -16,7 +16,7 @@ export async function requestRender(data: {
     },
     body: JSON.stringify({
       ...data,
-      output: normalizedOutput,
+      outputFile: normalizedOutput,
     }),
   });
 

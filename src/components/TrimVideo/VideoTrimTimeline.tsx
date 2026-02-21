@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 interface Props {
     file: File | null;
     onChange: (start: number, end: number) => void;
-    disabled?: boolean; // new prop to block inputs
+    disabled?: boolean;
 }
 
 export default function VideoTrimTimeline({ file, onChange, disabled = false }: Props) {
@@ -16,7 +16,14 @@ export default function VideoTrimTimeline({ file, onChange, disabled = false }: 
     const [end, setEnd] = useState(0);
 
     useEffect(() => {
-        if (!file) return;
+        if (!file) {
+            setVideoUrl(null);
+            setDuration(0);
+            setCurrentTime(0);
+            setStart(0);
+            setEnd(0);
+            return;
+        }
 
         const url = URL.createObjectURL(file);
         setVideoUrl(url);
@@ -40,16 +47,27 @@ export default function VideoTrimTimeline({ file, onChange, disabled = false }: 
         return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
     };
 
+    const timelineScale = duration > 0 ? duration : 1;
+
     return (
-        <div className="space-y-4">
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-4 lg:p-5 shadow">
+            <h2 className="font-semibold tracking-widest mb-3">
+                VIDEO TRIM
+            </h2>
+
+            {!videoUrl && (
+                <div className="min-h-40 rounded-lg border border-dashed border-slate-700 grid place-items-center text-sm text-slate-500">
+                    Select a video to preview and trim timeline.
+                </div>
+            )}
+
             {videoUrl && (
-                <>
-                    {/* Video Preview */}
+                <div className="space-y-4">
                     <video
                         ref={videoRef}
                         src={videoUrl}
-                        controls={!disabled} // disable controls while processing
-                        className="w-full rounded-lg"
+                        controls={true}
+                        className="w-full max-h-[42vh] rounded-lg bg-black object-contain"
                         onLoadedMetadata={(e) => {
                             const d = e.currentTarget.duration;
                             setDuration(d);
@@ -58,25 +76,23 @@ export default function VideoTrimTimeline({ file, onChange, disabled = false }: 
                         onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                     />
 
-                    {/* Timeline */}
-                    <div className="relative w-full h-6 bg-gray-200 rounded-md">
+                    <div className="relative w-full h-6 bg-slate-800 rounded-md">
                         <div
                             className="absolute h-6 bg-blue-400/40 rounded-md"
                             style={{
-                                left: `${(start / duration) * 100}%`,
-                                width: `${((end - start) / duration) * 100}%`,
+                                left: `${(start / timelineScale) * 100}%`,
+                                width: `${((end - start) / timelineScale) * 100}%`,
                             }}
                         />
                         <div
                             className="absolute top-0 bottom-0 w-0.5 bg-red-500"
-                            style={{ left: `${(currentTime / duration) * 100}%` }}
+                            style={{ left: `${(currentTime / timelineScale) * 100}%` }}
                         />
                     </div>
 
-                    {/* Sliders */}
                     <div className="flex flex-col gap-3">
                         <div>
-                            <label className="text-sm font-medium">
+                            <label className="text-sm font-medium text-slate-300">
                                 Start: {formatTime(start)}
                             </label>
                             <input
@@ -85,7 +101,7 @@ export default function VideoTrimTimeline({ file, onChange, disabled = false }: 
                                 max={duration}
                                 step={0.01}
                                 value={start}
-                                disabled={disabled} // disable while processing
+                                disabled={disabled}
                                 onChange={(e) =>
                                     setStart(Math.min(Number(e.target.value), end - 0.1))
                                 }
@@ -94,7 +110,7 @@ export default function VideoTrimTimeline({ file, onChange, disabled = false }: 
                         </div>
 
                         <div>
-                            <label className="text-sm font-medium">
+                            <label className="text-sm font-medium text-slate-300">
                                 End: {formatTime(end)}
                             </label>
                             <input
@@ -103,7 +119,7 @@ export default function VideoTrimTimeline({ file, onChange, disabled = false }: 
                                 max={duration}
                                 step={0.01}
                                 value={end}
-                                disabled={disabled} // disable while processing
+                                disabled={disabled}
                                 onChange={(e) =>
                                     setEnd(Math.max(Number(e.target.value), start + 0.1))
                                 }
@@ -111,8 +127,8 @@ export default function VideoTrimTimeline({ file, onChange, disabled = false }: 
                             />
                         </div>
                     </div>
-                </>
+                </div>
             )}
-        </div>
+        </section>
     );
 }
