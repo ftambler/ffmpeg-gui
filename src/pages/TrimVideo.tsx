@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import VideoTrimTimeline from "../components/TrimVideo/VideoTrimTimeline";
 import { requestRender } from "../services/renderService";
 import { toast } from "react-toastify";
-import { readSettings } from "../services/settingsService";
 import OutputSettings from "../components/TrimVideo/OutputSettings";
 import FilePicker from "../components/TrimVideo/FilePicker";
 import TrimActionPanel from "../components/TrimVideo/TrimActionPanel";
@@ -29,15 +28,6 @@ export default function TrimVideo() {
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [baseInput, setBaseInput] = useState("");
-    const [baseOutput, setBaseOutput] = useState("");
-
-    useEffect(() => {
-        const settings = readSettings();
-        setBaseInput(settings.BASE_INPUT);
-        setBaseOutput(settings.BASE_OUTPUT);
-    }, []);
-
     const handleChange = <K extends keyof TrimFormData>(
         key: K,
         value: TrimFormData[K]
@@ -48,11 +38,6 @@ export default function TrimVideo() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
-
-        if (!baseInput || !baseOutput) {
-            toast.error("Configure INPUT and OUTPUT folder in Settings first");
-            return;
-        }
 
         if (!form.file) {
             setError("Please select a video file.");
@@ -78,15 +63,15 @@ export default function TrimVideo() {
             setIsSubmitting(true);
             
             const result = await requestRender({
-                input: `${baseInput}/${form.file.name}`,
+                inputFile: form.file.name,
                 start: form.startTime,
                 end: form.endTime,
-                output: `${baseOutput}/${form.outputName}`,
+                outputFile: form.outputName,
                 format: form.outputFormat,
             });
 
             toast.dark("Video trimmed successfully!");
-            toast.dark(`Saved: ${baseOutput}/${form.file.name}`);
+            toast.dark(`Saved: ${form.outputName}.${form.outputFormat}`);
             console.log("Render complete:", result);
         } catch (err: any) {
             setError(err?.message || "Render failed.");
