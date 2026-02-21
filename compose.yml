@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    container_name: my-node-app
+    ports:
+      - "5173:5173"   # Vite frontend
+      - "3001:3001" # Uncomment if your backend exposes another port
+    volumes:
+      - C:/Users/fede/Documents/DockerMount:/video  # Mount local folder into container
+    environment:
+      - INPUT_FOLDER=/data/input
+      - OUTPUT_FOLDER=/data/output
+    working_dir: /app
+    command: npx concurrently "npm:dev:frontend" "npm:dev:server"
+    restart: unless-stopped
