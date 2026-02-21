@@ -1,2 +1,2 @@
-export type VideoOutputFormat = "mp4" | "mkv" | "mov" | "webm";
-export const videoOutputFormats: VideoOutputFormat[] = ["mp4", "mkv", "mov", "webm"];
+export type VideoOutputFormat = "mp4" | "mkv" | "mov";
+export const videoOutputFormats: VideoOutputFormat[] = ["mp4", "mkv", "mov"];
