@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    image: ftambler/ffmpeg-gui:latest
     container_name: ffmpeg-gui
     ports:
       - "3000:3000"
