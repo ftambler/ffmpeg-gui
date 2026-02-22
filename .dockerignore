@@ -1,8 +1,10 @@
 node_modules
 dist
+dist-server
 .vscode
 .DS_Store
 .git
+.github
 .gitignore
 .env
 compose.yml

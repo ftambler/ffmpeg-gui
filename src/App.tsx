@@ -7,8 +7,8 @@ export default function App() {
         <Router>
             <Routes>
                 <Route path="/" element={<Layout />}>
-                    <Route index element={<Navigate to="/trim" />} />
-                    <Route path="trim" element={<TrimVideo />} />
+                    <Route index element={<Navigate to="/" />} />
+                    <Route path="trimVideo" element={<TrimVideo />} />
                     {/* <Route path="settings" element={<SettingsPage />} /> */}
                 </Route>
             </Routes>

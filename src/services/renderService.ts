@@ -9,7 +9,7 @@ export async function requestRender(data: {
     ? data.outputFile
     : `${data.outputFile}.${data.format}`;
 
-  const response = await fetch("http://localhost:3001/api/render", {
+  const response = await fetch("http://localhost:3000/api/render", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

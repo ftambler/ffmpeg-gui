@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { handleRender } from "../controllers/renderController";
+import { handleRender } from "../controllers/renderController.js";
 
 const router = Router();
 

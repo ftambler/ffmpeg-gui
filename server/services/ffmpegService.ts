@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import path from "path";
-import { config } from "../config";
+import { config } from "../config.js";
 
 type TrimOptions = {
   inputFile: string;

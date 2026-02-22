@@ -1,19 +1,31 @@
+# ---------- Stage 1: Build ----------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+
+RUN npm run build:frontend
+RUN npm run build:server
+
+
+# ---------- Stage 2: Runtime ----------
 FROM node:20-alpine
 
-# Install FFmpeg
 RUN apk add --no-cache ffmpeg
 
 WORKDIR /app
 
-# Copy package.json and install all deps
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --omit=dev
 
-# Copy everything
-COPY . .
+# Copy built output
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/dist-server ./dist-server
 
-# Expose ports
-EXPOSE 5173
+EXPOSE 3000
 
-# Run dev servers concurrently
-CMD ["npx", "concurrently", "npm:dev:frontend", "npm:dev:server"]
+CMD ["node", "dist-server/index.js"]
