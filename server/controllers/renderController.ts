@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { renderVideo } from "../services/ffmpegService";
+import { renderVideo } from "../services/ffmpegService.js";
 
 export async function handleRender(req: Request, res: Response) {
   try {

@@ -1,5 +1,6 @@
 node_modules
 dist
+dist-server
 .vscode
 .DS_Store
 .git

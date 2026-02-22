@@ -2,7 +2,8 @@ import { NavLink } from "react-router-dom";
 import { Scissors, Settings } from "lucide-react";
 
 const routes = [
-    { path: "/trim", label: "Trim Video", icon: Scissors },
+    { path: "/trimVideo", label: "Trim Video", icon: Scissors },
+    { path: "/trimAudio", label: "Trim Audio", icon: Scissors },
 ];
 
 const settings = { path: "/settings", label: "Settings", icon: Settings };

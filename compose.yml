@@ -1,17 +1,13 @@
 services:
   app:
     build: .
-    container_name: my-node-app
+    container_name: ffmpeg-gui
     ports:
-      - "5173:5173"   # Vite frontend
-      - "3001:3001" # Uncomment if your backend exposes another port
+      - "3000:3000"
     volumes:
-      # - C:/Users/fede/Documents/DockerMount:/video  # Mount local folder into container
-      - C:/Users/fede/Videos/GD:/video:ro  # Read Only for input folder
-      - C:/Users/fede/Videos/GD/Trimmed:/video/Trimmed  # Output folder
+      - C:/Users/fede/Videos/GD:/video:ro
+      - C:/Users/fede/Videos/GD/Trimmed:/video/Trimmed
     environment:
       - INPUT_FOLDER=/video
       - OUTPUT_FOLDER=/video/Trimmed
-    working_dir: /app
-    command: npx concurrently "npm:dev:frontend" "npm:dev:server"
     restart: unless-stopped
