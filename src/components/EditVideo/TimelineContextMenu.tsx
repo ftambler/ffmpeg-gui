@@ -3,16 +3,43 @@ type Props = {
   y: number;
   onDelete: () => void;
   onTrim: () => void;
+  onClose: () => void
 };
+
+import { useEffect, useRef } from "react";
 
 export function TimelineContextMenu({
   x,
   y,
   onDelete,
   onTrim,
+  onClose,
 }: Props) {
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node)
+      ) {
+        onClose();
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, [onClose]);
+
   return (
     <div
+      ref={menuRef}
       className="fixed bg-slate-800 border border-slate-700 rounded shadow-lg p-2 z-50"
       style={{ top: y, left: x }}
     >

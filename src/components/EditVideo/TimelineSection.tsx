@@ -63,9 +63,10 @@ export function TimelineSection({
                 onSelect={() =>
                   onSelect(clip.id)
                 }
-                onContext={(e) =>
+                onContext={(e) => {
+                  e.preventDefault()
                   onContext(e, clip.id)
-                }
+                }}
               />
             ))}
           </div>
