@@ -1,4 +1,6 @@
-type Props = {
+import { useEffect, useRef } from "react";
+
+type TimelineContextMenuProps = {
   x: number;
   y: number;
   onDelete: () => void;
@@ -6,15 +8,8 @@ type Props = {
   onClose: () => void
 };
 
-import { useEffect, useRef } from "react";
 
-export function TimelineContextMenu({
-  x,
-  y,
-  onDelete,
-  onTrim,
-  onClose,
-}: Props) {
+export function TimelineContextMenu({ x, y, onDelete, onTrim, onClose }: TimelineContextMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -38,22 +33,12 @@ export function TimelineContextMenu({
   }, [onClose]);
 
   return (
-    <div
-      ref={menuRef}
-      className="fixed bg-slate-800 border border-slate-700 rounded shadow-lg p-2 z-50"
-      style={{ top: y, left: x }}
-    >
-      <button
-        className="block w-full text-left px-3 py-1 hover:bg-slate-700"
-        onClick={onDelete}
-      >
+    <div ref={menuRef} className="fixed bg-slate-800 border border-slate-700 rounded shadow-lg p-2 z-50" style={{ top: y, left: x }} >
+      <button className="block w-full text-left px-3 py-1 hover:bg-slate-700" onClick={onDelete}>
         Delete
       </button>
 
-      <button
-        className="block w-full text-left px-3 py-1 hover:bg-slate-700"
-        onClick={onTrim}
-      >
+      <button className="block w-full text-left px-3 py-1 hover:bg-slate-700" onClick={onTrim} >
         Trim
       </button>
     </div>

@@ -1,12 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { Edit, Scissors, Settings } from "lucide-react";
+import { Edit, Scissors} from "lucide-react";
 
 const routes = [
     { path: "/trimVideo", label: "Trim Video", icon: Scissors },
     { path: "/editVideo", label: "Edit Video", icon: Edit },
 ];
-
-const settings = { path: "/settings", label: "Settings", icon: Settings };
 
 export default function Sidebar() {
     return (
@@ -19,40 +17,23 @@ export default function Sidebar() {
                 {routes.map((route) => {
                     const Icon = route.icon;
                     return (
-                        <NavLink
-                            key={route.path}
-                            to={route.path}
+                        <NavLink key={route.path} to={route.path}
                             className={({ isActive }) =>
                                 `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
                                 hover:bg-slate-700/60 hover:translate-x-1
                                 ${isActive ? "bg-slate-700 shadow-inner" : ""}`
                             }
                         >
+
                             <Icon className="w-5 h-5 opacity-80" />
                             <span className="text-sm font-medium tracking-wide">
                                 {route.label}
                             </span>
+                            
                         </NavLink>
                     );
                 })}
             </nav>
-
-            <div className="px-4 py-5 border-t border-slate-700">
-                <NavLink
-                    key={settings.path}
-                    to={settings.path}
-                    className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                        hover:bg-slate-700/60 hover:translate-x-1
-                        ${isActive ? "bg-slate-700 shadow-inner" : ""}`
-                    }
-                >
-                    <settings.icon className="w-5 h-5 opacity-80" />
-                    <span className="text-sm font-medium tracking-wide">
-                        {settings.label}
-                    </span>
-                </NavLink>
-            </div>
         </aside>
     );
 }

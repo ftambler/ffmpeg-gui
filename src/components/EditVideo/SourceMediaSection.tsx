@@ -1,14 +1,11 @@
 import { useRef, type ChangeEvent } from "react";
 
-type Props = {
+type SourceMediaProps = {
   disabled?: boolean;
   onFiles: (files: File[]) => void;
 };
 
-export function SourceMediaSection({
-  disabled,
-  onFiles,
-}: Props) {
+export function SourceMediaSection({ disabled, onFiles }: SourceMediaProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {

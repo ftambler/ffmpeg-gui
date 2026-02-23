@@ -9,7 +9,7 @@ import { TimelineSection } from "../components/EditVideo/TimelineSection";
 import OutputSettings from "../components/TrimVideo/OutputSettings";
 import TrimActionPanel from "../components/TrimVideo/TrimActionPanel";
 import { TimelineContextMenu } from "../components/EditVideo/TimelineContextMenu";
-import { TrimModal } from "../components/EditVideo/TrimModel";
+import { TrimPopup } from "../components/EditVideo/TrimModel";
 import { SourceMediaSection } from "../components/EditVideo/SourceMediaSection";
 
 export default function TimelineEditor() {
@@ -183,7 +183,7 @@ export default function TimelineEditor() {
       )}
 
       {trimTarget && trimDraft && (
-        <TrimModal
+        <TrimPopup
           clip={trimTarget}
           draft={trimDraft}
           onChange={(start, end) =>

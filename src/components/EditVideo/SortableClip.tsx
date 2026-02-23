@@ -11,12 +11,7 @@ type SortableClipProps = {
   onContext: (e: MouseEvent) => void;
 };
 
-export function SortableClip({
-  clip,
-  isSelected,
-  onSelect,
-  onContext,
-}: SortableClipProps) {
+export function SortableClip({ clip, isSelected, onSelect, onContext }: SortableClipProps) {
   const {
     attributes,
     listeners,
