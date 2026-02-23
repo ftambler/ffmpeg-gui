@@ -4,13 +4,13 @@ import { toast } from "react-toastify";
 import { useTimeline } from "../hooks/useTimeline";
 import type { VideoOutputFormat } from "../types/VideoOutputFormat";
 import type { MediaDraft } from "../types/MediaDraft";
-import { requestTimelineRender } from "../services/renderService";
 import { TimelineSection } from "../components/EditVideo/TimelineSection";
 import OutputSettings from "../components/TrimVideo/OutputSettings";
 import TrimActionPanel from "../components/TrimVideo/TrimActionPanel";
 import { TimelineContextMenu } from "../components/EditVideo/TimelineContextMenu";
 import { TrimPopup } from "../components/EditVideo/TrimModel";
 import { SourceMediaSection } from "../components/EditVideo/SourceMediaSection";
+import { RenderService } from "../services/renderService";
 
 export default function TimelineEditor() {
   const timeline = useTimeline();
@@ -41,10 +41,8 @@ export default function TimelineEditor() {
 
     try {
       setIsSubmitting(true);
-      await requestTimelineRender(
-        payload,
-        `${outputName}.${outputFormat}`
-      );
+      await RenderService.requestTimelineRender( payload, `${outputName}.${outputFormat}` );
+
       toast.dark("Timeline rendered successfully.");
     } catch (err: any) {
       setError(err?.message || "Render failed.");

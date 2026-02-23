@@ -1,11 +1,11 @@
 import { useState } from "react";
 import VideoTrimTimeline from "../components/TrimVideo/VideoTrimTimeline";
-import { requestRender } from "../services/renderService";
 import { toast } from "react-toastify";
 import OutputSettings from "../components/TrimVideo/OutputSettings";
 import FilePicker from "../components/TrimVideo/FilePicker";
 import TrimActionPanel from "../components/TrimVideo/TrimActionPanel";
 import type { VideoOutputFormat } from "../types/VideoOutputFormat";
+import { RenderService } from "../services/renderService";
 
 interface TrimFormData {
     file: File | null;
@@ -62,7 +62,7 @@ export default function TrimVideo() {
         try {
             setIsSubmitting(true);
             
-            const result = await requestRender({
+            const result = await RenderService.requestRender({
                 inputFile: form.file.name,
                 start: form.startTime,
                 end: form.endTime,
