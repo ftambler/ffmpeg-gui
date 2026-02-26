@@ -1,28 +1,20 @@
-export async function requestRender(data: {
-  inputFile: string,
-  start: string;
-  end: string;
-  outputFile: string;
-  format: string;
-}) {
-  const normalizedOutput = data.outputFile.toLowerCase().endsWith(`.${data.format.toLowerCase()}`)
-    ? data.outputFile
-    : `${data.outputFile}.${data.format}`;
+import { api } from "../api/axios";
+import type { MediaPayload } from "../types/MediaDraft";
 
-  const response = await fetch("http://localhost:3000/api/render", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ...data,
-      outputFile: normalizedOutput,
-    }),
-  });
+export class RenderService {
+  static async requestRender(data: { inputFile: string; start: string; end: string; outputFile: string; format: string; }) {
+    const normalizedOutput = data.outputFile.toLowerCase().endsWith( `.${data.format.toLowerCase()}`)
+        ? data.outputFile
+        : `${data.outputFile}.${data.format}`;
 
-  if (!response.ok) {
-    throw new Error("Render request failed");
+    const response = await api.post("/render", { ...data, outputFile: normalizedOutput });
+
+    return response.data;
   }
 
-  return response.json();
+  static async requestTimelineRender( media: MediaPayload[], outputFile: string): Promise<{ outputFile: string }> {
+    const response = await api.post("/timeline/render", { media, outputFile });
+
+    return response.data;
+  }
 }
