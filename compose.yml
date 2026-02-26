@@ -11,4 +11,5 @@ services:
     environment:
       - INPUT_FOLDER=/video
       - OUTPUT_FOLDER=/video/Trimmed
+      - TEMP_FOLDER=/tmp
     restart: unless-stopped
