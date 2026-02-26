@@ -5,32 +5,36 @@ import { useTimeline } from "../hooks/useTimeline";
 import type { VideoOutputFormat } from "../types/VideoOutputFormat";
 import type { MediaDraft } from "../types/MediaDraft";
 import { TimelineSection } from "../components/EditVideo/TimelineSection";
-import OutputSettings from "../components/TrimVideo/OutputSettings";
-import TrimActionPanel from "../components/TrimVideo/TrimActionPanel";
+import OutputSettings from "../components/EditVideo/OutputSettings";
+import TrimActionPanel from "../components/EditVideo/TrimActionPanel";
 import { TimelineContextMenu } from "../components/EditVideo/TimelineContextMenu";
-import { TrimPopup } from "../components/EditVideo/TrimModel";
+import { TrimPopup } from "../components/EditVideo/TrimPopup";
 import { SourceMediaSection } from "../components/EditVideo/SourceMediaSection";
-import { RenderService } from "../services/renderService";
+import { RenderService } from "../services/RenderService";
 
 export default function TimelineEditor() {
   const timeline = useTimeline();
 
   const [outputName, setOutputName] = useState("");
-  const [outputFormat, setOutputFormat] =
-    useState<VideoOutputFormat>("mp4");
+  const [outputFormat, setOutputFormat] = useState<VideoOutputFormat>("mp4");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [contextMenu, setContextMenu] =
-    useState<{ x: number; y: number; id: string } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
 
-  const [trimTarget, setTrimTarget] =
-    useState<MediaDraft | null>(null);
-  const [trimDraft, setTrimDraft] =
-    useState<{ start: number; end: number } | null>(null);
+  const [trimTarget, setTrimTarget] = useState<MediaDraft | null>(null);
+  const [trimDraft, setTrimDraft] = useState<{ start: number; end: number } | null>(null);
 
   async function handleSubmit() {
-    if (!timeline.clips.length) return;
+    if (!timeline.clips.length) {
+      setError("Select at least one video file.");
+      return;
+    }
+    
+    if (!outputName) {
+      setError("Set an output name.");
+      return;  
+    }
 
     const payload = timeline.clips.map((c) => ({
       inputFile: c.file.name,
@@ -41,7 +45,7 @@ export default function TimelineEditor() {
 
     try {
       setIsSubmitting(true);
-      await RenderService.requestTimelineRender( payload, `${outputName}.${outputFormat}` );
+      await RenderService.requestTimelineRender(payload, `${outputName}.${outputFormat}`);
 
       toast.dark("Timeline rendered successfully.");
     } catch (err: any) {
@@ -100,8 +104,8 @@ export default function TimelineEditor() {
     timeline.add(newClips);
   }
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 px-6 py-8">
-      <div className="max-w-6xl mx-auto flex flex-col gap-8">
+    <div className="min-h-screen bg-slate-950 text-slate-200 px-6 py-8 overflow-y-auto">
+      <div className="max-w-6xl mx-auto flex flex-col gap-8 ">
 
         <form
           onSubmit={(e) => {
@@ -151,7 +155,7 @@ export default function TimelineEditor() {
         </form>
       </div>
 
-      {/* Context + Modals OUTSIDE form */}
+      {/* Right Click on Timeline Menu */}
       {contextMenu && (
         <TimelineContextMenu
           x={contextMenu.x}
@@ -180,6 +184,7 @@ export default function TimelineEditor() {
         />
       )}
 
+      {/* Trim Popup */}
       {trimTarget && trimDraft && (
         <TrimPopup
           clip={trimTarget}
