@@ -10,7 +10,7 @@ export default function Layout() {
                 <Sidebar />
             </div>
 
-            <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex-1 min-w-0 flex flex-col scroll-bar">
                 <main className="flex-1 overflow-y-auto">
                     <Outlet />
                 </main>

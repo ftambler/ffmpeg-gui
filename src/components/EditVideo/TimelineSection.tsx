@@ -31,8 +31,7 @@ export function TimelineSection({ clips, selectedId, onSelect, onContext, onReor
         }}
       >
         <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy} >
-          {/* <div className="flex gap-4 overflow-x-auto"> */}
-          <div className="flex gap-4 overflow-x-auto overflow-y-hidden items-start">
+          <div className="flex gap-4 overflow-x-auto scroll-bar items-start py-2">
             {clips.map((clip) => (
               <SortableClip key={clip.id} clip={clip} isSelected={clip.id === selectedId}
                 onSelect={() => onSelect(clip.id)}
