@@ -1,5 +1,6 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import type { MediaDraft } from "../../types/MediaDraft";
 import { SortableClip } from "./SortableClip";
 
@@ -19,6 +20,7 @@ export function TimelineSection({ clips, selectedId, onSelect, onContext, onReor
       </h2>
 
       <DndContext collisionDetection={closestCenter}
+        modifiers={[restrictToHorizontalAxis]}
         onDragEnd={(e: DragEndEvent) => {
           if (!e.over) return;
           if (e.active.id === e.over.id) return;
@@ -42,7 +44,7 @@ export function TimelineSection({ clips, selectedId, onSelect, onContext, onReor
             ))}
           </div>
         </SortableContext>
-        
+
       </DndContext>
     </section>
   );
