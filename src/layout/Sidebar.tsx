@@ -1,14 +1,13 @@
 import { NavLink } from "react-router-dom";
-import { Edit, Scissors} from "lucide-react";
+import { Edit } from "lucide-react";
 
 const routes = [
-    { path: "/trimVideo", label: "Trim Video", icon: Scissors },
     { path: "/editVideo", label: "Edit Video", icon: Edit },
 ];
 
 export default function Sidebar() {
     return (
-        <aside className="w-72 shrink-0 overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-800 text-slate-100 flex flex-col shadow-xl">
+        <aside className="w-72 shrink-0 h-full bg-gradient-to-b from-slate-900 to-slate-800 text-slate-100 flex flex-col shadow-xl">
             <h1 className="text-2xl font-semibold px-6 py-5 border-b border-slate-700 tracking-wide">
                 FFMPEG - GUI
             </h1>
