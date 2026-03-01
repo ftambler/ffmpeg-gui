@@ -2,23 +2,16 @@ import path from "path";
 import { config } from "../config.js";
 import fs from "fs/promises";
 import { randomUUID } from "crypto";
-import { runFFmpeg } from "./ffmpegService.js";
+import { concatVideos, trimVideo } from "./ffmpegService.js";
 import { Media } from "../types/Media.js";
 import { safeJoin } from "../utils/PathUtils.js";
+import { BadRequestError } from "../controllers/errors.js";
 
 type TrimParams = {
   inputFile: string;
   outputFile: string;
   start: number;
   end: number;
-};
-
-type TrimOptions = {
-  inputPath: string;
-  outputPath: string;
-  start: number;
-  end: number;
-  reencode?: boolean;
 };
 
 export async function renderTrim(options: TrimParams) {
@@ -36,38 +29,12 @@ export async function renderTrim(options: TrimParams) {
   return options.outputFile;
 }
 
-function trimVideo({ inputPath, outputPath, start, end, reencode = true }: TrimOptions): Promise<void> {
-  const args = reencode
-    ? [
-      "-i", inputPath,
-      "-ss", start.toString(),
-      "-t", (end - start).toString(),
-      "-c:v", "libx264",
-      "-c:a", "aac",
-      "-preset", "veryfast",
-      "-crf", "18",
-      "-movflags", "+faststart",
-      "-y",
-      outputPath
-    ]
-    : [
-      "-ss", start.toString(),
-      "-t", (end - start).toString(),
-      "-i", inputPath,
-      "-c", "copy",
-      "-y",
-      outputPath
-    ];
-
-  return runFFmpeg(args);
-}
-
-export async function renderTimeline( media: Media[], outputFile: string ): Promise<string> {
+export async function renderTimeline(media: Media[], outputFile: string): Promise<string> {
   if (!media.length) {
-    throw new Error("Media array is empty");
+    throw new BadRequestError("Media array is empty");
   }
 
-  media.sort((a, b) => a.timelineStartTime - b.timelineStartTime);
+  const sortedMedia = [...media].sort((a, b) => a.timelineStartTime - b.timelineStartTime);
 
   const jobId = randomUUID();
   const jobDir = path.join(config.tempFolder, `job-${jobId}`);
@@ -76,8 +43,8 @@ export async function renderTimeline( media: Media[], outputFile: string ): Prom
   try {
     const trimmedFiles: string[] = [];
 
-    for (let i = 0; i < media.length; i++) {
-      const clip = media[i];
+    for (let i = 0; i < sortedMedia.length; i++) {
+      const clip = sortedMedia[i];
 
       if (clip.endTime <= clip.startTime) {
         throw new Error(`Invalid time range for clip ${i}`);
@@ -107,14 +74,7 @@ export async function renderTimeline( media: Media[], outputFile: string ): Prom
 
     const finalOutput = safeJoin(config.outputFolder, outputFile);
 
-    await runFFmpeg([
-      "-f", "concat",
-      "-safe", "0",
-      "-i", concatPath,
-      "-c", "copy",
-      "-y",
-      finalOutput
-    ]);
+    await concatVideos(concatPath, finalOutput);
 
     return outputFile;
 

@@ -1,17 +1,49 @@
-import { spawn } from "child_process";
+import { runFFmpeg } from "../infrastructure/ffmpegInfra.js";
 
-export function runFFmpeg(args: string[]): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const ffmpeg = spawn("ffmpeg", args);
+type TrimOptions = {
+  inputPath: string;
+  outputPath: string;
+  start: number;
+  end: number;
+  reencode?: boolean;
+};
 
-    // useful for debugging
-    ffmpeg.stderr.on("data", (data) => {
-      console.error(data.toString()); 
-    });
+export async function trimVideo({ inputPath, outputPath, start, end, reencode = true }: TrimOptions): Promise<void> {
+  const args = reencode
+    ? [
+      "-i", inputPath,
+      "-ss", start.toString(),
+      "-t", (end - start).toString(),
+      "-c:v", "libx264",
+      "-c:a", "aac",
+      "-preset", "veryfast",
+      "-crf", "18",
+      "-movflags", "+faststart",
+      "-y",
+      outputPath
+    ]
+    : [
+      "-ss", start.toString(),
+      "-t", (end - start).toString(),
+      "-i", inputPath,
+      "-c", "copy",
+      "-y",
+      outputPath
+    ];
 
-    ffmpeg.on("close", (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`FFmpeg exited with code ${code}`));
-    });
-  });
+  return runFFmpeg(args);
+}
+
+export async function concatVideos(
+  concatFilePath: string,
+  outputPath: string
+) {
+  return runFFmpeg([
+    "-f", "concat",
+    "-safe", "0",
+    "-i", concatFilePath,
+    "-c", "copy",
+    "-y",
+    outputPath
+  ]);
 }

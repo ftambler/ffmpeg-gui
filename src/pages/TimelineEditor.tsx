@@ -10,7 +10,7 @@ import TrimActionPanel from "../components/EditVideo/TrimActionPanel";
 import { TimelineContextMenu } from "../components/EditVideo/TimelineContextMenu";
 import { TrimPopup } from "../components/EditVideo/TrimPopup";
 import { SourceMediaSection } from "../components/EditVideo/SourceMediaSection";
-import { RenderService } from "../services/RenderService";
+import { RenderService } from "../services/renderService";
 
 export default function TimelineEditor() {
   const timeline = useTimeline();
