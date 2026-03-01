@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { handleRender } from "../controllers/renderController.js";
+import { handleVideoEdit } from "../controllers/renderController.js";
 
 const router = Router();
 
-router.post("/render", handleRender);
+router.post("/video/render", handleVideoEdit);
 
 export default router;

@@ -1,11 +1,19 @@
 import { Request, Response } from "express";
-import { renderVideo } from "../services/ffmpegService.js";
+import { renderTimeline } from "../services/RenderService.js";
 
-export async function handleRender(req: Request, res: Response) {
+export async function handleVideoEdit(req: Request, res: Response) {
   try {
-    const result = await renderVideo(req.body);
+    const { media, outputFile } = req.body;
+
+    if (!Array.isArray(media) || typeof outputFile !== "string") {
+      return res.status(400).json({ error: "Invalid request payload" });
+    }
+
+    const result = await renderTimeline(media, outputFile);
     res.json({ success: true, result });
-  } catch (err) {
-    res.status(500).json({ error: "Render failed" });
+
+  } catch (err: any) {
+    const status = err.statusCode ?? 500;
+    res.status(status).json({ error: err.message ?? "Render failed" });
   }
 }

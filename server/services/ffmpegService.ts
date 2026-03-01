@@ -1,39 +1,49 @@
-import { spawn } from "child_process";
-import path from "path";
-import { config } from "../config.js";
+import { runFFmpeg } from "../infrastructure/ffmpegInfra.js";
 
 type TrimOptions = {
-  inputFile: string;
-  start: string;
-  end: string;
-  outputFile: string;
+  inputPath: string;
+  outputPath: string;
+  start: number;
+  end: number;
+  reencode?: boolean;
 };
 
-export function renderVideo(options: TrimOptions): Promise<string> {
-  const inputPath = path.join(config.inputFolder, options.inputFile);
-  const outputPath = path.join(config.outputFolder, options.outputFile);
-
-  return new Promise((resolve, reject) => {
-    const ffmpeg = spawn("ffmpeg", [
-      "-ss", options.start,
-      "-to", options.end,
+export async function trimVideo({ inputPath, outputPath, start, end, reencode = true }: TrimOptions): Promise<void> {
+  const args = reencode
+    ? [
       "-i", inputPath,
+      "-ss", start.toString(),
+      "-t", (end - start).toString(),
       "-c:v", "libx264",
       "-c:a", "aac",
-      "-preset", "medium",
+      "-preset", "veryfast",
       "-crf", "18",
+      "-movflags", "+faststart",
       "-y",
       outputPath
-    ]);
+    ]
+    : [
+      "-ss", start.toString(),
+      "-t", (end - start).toString(),
+      "-i", inputPath,
+      "-c", "copy",
+      "-y",
+      outputPath
+    ];
 
-    // useful for debugging
-    // ffmpeg.stderr.on("data", (data) => {
-    //   console.error(data.toString()); 
-    // });
+  return runFFmpeg(args);
+}
 
-    ffmpeg.on("close", (code) => {
-      if (code === 0) resolve(options.outputFile);
-      else reject(new Error(`FFmpeg exited with code ${code}`));
-    });
-  });
+export async function concatVideos(
+  concatFilePath: string,
+  outputPath: string
+) {
+  return runFFmpeg([
+    "-f", "concat",
+    "-safe", "0",
+    "-i", concatFilePath,
+    "-c", "copy",
+    "-y",
+    outputPath
+  ]);
 }
