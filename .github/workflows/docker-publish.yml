@@ -29,8 +29,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ftambler/ffmpeg-gui:latest
             ftambler/ffmpeg-gui:${{ github.sha }}
+            ftambler/ffmpeg-gui:latest
 
       # 4. Optional: display image digest
       - name: Show pushed image digest
