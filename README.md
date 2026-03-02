@@ -51,6 +51,11 @@ INPUT_FOLDER=/video
 TEMP_FOLDER=/tmp
 OUTPUT_FOLDER=/video/Trimmed
 ````
+**Dev Only:**
+
+```env
+VITE_API_URL=http://localhost:3000/api
+```
 
 ---
 
