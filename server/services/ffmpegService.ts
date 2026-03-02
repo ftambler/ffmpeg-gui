@@ -6,9 +6,10 @@ type TrimOptions = {
   start: number;
   end: number;
   reencode?: boolean;
+  onProgress?: (data: Record<string, string>) => void;
 };
 
-export async function trimVideo({ inputPath, outputPath, start, end, reencode = true }: TrimOptions): Promise<void> {
+export async function trimVideo({ inputPath, outputPath, start, end, reencode = true, onProgress }: TrimOptions): Promise<void> {
   const args = reencode
     ? [
       "-i", inputPath,
@@ -31,7 +32,7 @@ export async function trimVideo({ inputPath, outputPath, start, end, reencode = 
       outputPath
     ];
 
-  return runFFmpeg(args);
+  return runFFmpeg(args, {onProgress});
 }
 
 export async function concatVideos(

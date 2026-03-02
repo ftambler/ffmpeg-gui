@@ -1,7 +1,7 @@
 import path from "path";
 import { config } from "../config.js";
 import fs from "fs/promises";
-import { randomUUID } from "crypto";
+import { randomUUID, UUID } from "crypto";
 import { concatVideos, trimVideo } from "./ffmpegService.js";
 import { Media } from "../types/Media.js";
 import { safeJoin } from "../utils/PathUtils.js";
@@ -29,14 +29,17 @@ export async function renderTrim(options: TrimParams) {
   return options.outputFile;
 }
 
-export async function renderTimeline(media: Media[], outputFile: string): Promise<string> {
+export async function renderTimeline(jobId: UUID, media: Media[], outputFile: string, onProgress?: (percent: number, message?: string) => void): Promise<string> {
   if (!media.length) {
     throw new BadRequestError("Media array is empty");
   }
 
   const sortedMedia = [...media].sort((a, b) => a.timelineStartTime - b.timelineStartTime);
 
-  const jobId = randomUUID();
+  const totalDuration = sortedMedia.reduce((sum, clip) => sum + (clip.endTime - clip.startTime), 0);
+
+  let processedDuration = 0;
+
   const jobDir = path.join(config.tempFolder, `job-${jobId}`);
   await fs.mkdir(jobDir, { recursive: true });
 
@@ -58,10 +61,20 @@ export async function renderTimeline(media: Media[], outputFile: string): Promis
         outputPath: tempOutput,
         start: clip.startTime,
         end: clip.endTime,
-        reencode: true
+        reencode: true,
+        onProgress: (p) => {
+          if (!p.out_time_ms) return;
+
+          const seconds = Number(p.out_time_ms) / 1_000_000;
+          const overall =
+            (processedDuration + seconds) / totalDuration;
+
+          onProgress?.(Math.min(overall * 100, 100), `Trimming ${i + 1}/${sortedMedia.length}`);
+        }
       });
 
       trimmedFiles.push(tempOutput);
+      processedDuration += clip.endTime - clip.startTime;
     }
 
     const concatPath = path.join(jobDir, "concat.txt");
@@ -74,7 +87,9 @@ export async function renderTimeline(media: Media[], outputFile: string): Promis
 
     const finalOutput = safeJoin(config.outputFolder, outputFile);
 
+    onProgress?.(99, "Concatenating");
     await concatVideos(concatPath, finalOutput);
+    onProgress?.(100, "Completed");
 
     return outputFile;
 
