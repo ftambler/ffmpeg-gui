@@ -49,6 +49,7 @@ export default function TimelineEditor() {
           <TimelineSection
             clips={timeline.clips}
             selectedId={timeline.selectedId}
+            disabled={render.isSubmitting}
             onSelect={timeline.setSelectedId}
             onContext={(e, id) =>
               setContextMenu({ x: e.clientX, y: e.clientY, id })
