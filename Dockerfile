@@ -3,6 +3,8 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+ENV VITE_API_URL=/api
+
 COPY package.json package-lock.json ./
 RUN npm ci
 

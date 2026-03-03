@@ -10,13 +10,7 @@ type TrimPopupProps = {
   onApply: () => void;
 };
 
-export function TrimPopup({
-  clip,
-  draft,
-  onChange,
-  onCancel,
-  onApply,
-}: TrimPopupProps) {
+export function TrimPopup({ clip, draft, onChange, onCancel, onApply }: TrimPopupProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -24,6 +18,7 @@ export function TrimPopup({
   const [currentTime, setCurrentTime] = useState(0);
   const [start, setStart] = useState(draft.start ?? 0);
   const [end, setEnd] = useState(draft.end ?? 0);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!clip?.file) {
@@ -46,9 +41,27 @@ export function TrimPopup({
     if (videoRef.current) {
       videoRef.current.currentTime = start;
     }
+    setError(undefined)
   }, [start, end]);
 
   const timelineScale = duration > 0 ? duration : 1;
+
+
+  function setStartToCurrent(): void {
+    if (!videoRef.current) return;
+
+    if (videoRef.current.currentTime <= end)
+      setStart(videoRef.current!.currentTime);
+    else setError("Start Time must be before End Time")
+  }
+
+  function setEndToCurrent(): void {
+    if (!videoRef.current) return;
+
+    if (videoRef.current.currentTime >= start)
+      setEnd(videoRef.current!.currentTime);
+    else setError("End Time must be after Start Time")
+  }
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
@@ -78,6 +91,16 @@ export function TrimPopup({
                   setCurrentTime(e.currentTarget.currentTime)
                 }
               />
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button className="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 rounded-lg" onClick={setStartToCurrent} >
+                  Current Time as START
+                </button>
+
+                <button className="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 rounded-lg" onClick={setEndToCurrent} >
+                  Current Time as END
+                </button>
+              </div>
 
               <div className="relative w-full h-6 bg-slate-800 rounded-md">
                 <div
@@ -125,17 +148,23 @@ export function TrimPopup({
               </div>
             </div>
           )}
+
+          {error && (
+            <div className="text-red-500 text-sm mb-2 mt-2">
+              {error}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 mt-6">
+            <button className="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-3 rounded-lg" onClick={onCancel} >
+              Cancel
+            </button>
+
+            <button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg" onClick={onApply} >
+              Apply Trim
+            </button>
+          </div>
         </section>
-
-        <div className="flex justify-end gap-3 mt-6">
-          <button className="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-3 rounded-lg" onClick={onCancel} >
-            Cancel
-          </button>
-
-          <button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg" onClick={onApply} >
-            Apply Trim
-          </button>
-        </div>
       </div>
     </div>
   );

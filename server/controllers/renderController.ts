@@ -1,19 +1,39 @@
 import { Request, Response } from "express";
-import { renderTimeline } from "../services/RenderService.js";
+import { randomUUID } from "crypto";
+
+import { createJob, updateJob } from "../utils/jobManager.js";
+import { renderTimeline } from "../services/renderingService.js";
 
 export async function handleVideoEdit(req: Request, res: Response) {
-  try {
-    const { media, outputFile } = req.body;
+  const { media, outputFile } = req.body;
 
-    if (!Array.isArray(media) || typeof outputFile !== "string") {
-      return res.status(400).json({ error: "Invalid request payload" });
+  const jobId = randomUUID();
+  createJob(jobId);
+
+  res.json({ jobId });
+
+  (async () => {
+    try {
+      updateJob(jobId, { status: "running" });
+
+      await renderTimeline(jobId, media, outputFile, (progress, message) => {
+        updateJob(jobId, {
+          progress,
+          message,
+          status: "running"
+        });
+      });
+
+      updateJob(jobId, {
+        status: "completed",
+        progress: 100
+      });
+
+    } catch (err: any) {
+      updateJob(jobId, {
+        status: "failed",
+        error: err.message
+      });
     }
-
-    const result = await renderTimeline(media, outputFile);
-    res.json({ success: true, result });
-
-  } catch (err: any) {
-    const status = err.statusCode ?? 500;
-    res.status(status).json({ error: err.message ?? "Render failed" });
-  }
+  })();
 }
