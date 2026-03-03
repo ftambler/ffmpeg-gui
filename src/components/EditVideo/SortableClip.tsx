@@ -7,12 +7,13 @@ import { formatTime } from "../../utils/timeUtils";
 type SortableClipProps = {
   clip: MediaDraft;
   isSelected: boolean;
+  disabled: boolean;
   onSelect: () => void;
   onContext: (e: MouseEvent) => void;
 };
 
-export function SortableClip({ clip, isSelected, onSelect, onContext }: SortableClipProps) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: clip.id });
+export function SortableClip({ clip, isSelected, disabled, onSelect, onContext }: SortableClipProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: clip.id, disabled });
 
   const style = {
     transform: CSS.Transform.toString(transform),

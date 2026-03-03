@@ -7,12 +7,13 @@ import { SortableClip } from "./SortableClip";
 type TimelineSectionProps = {
   clips: MediaDraft[];
   selectedId: string | null;
+  disabled: boolean;
   onSelect: (id: string) => void;
   onContext: (e: React.MouseEvent, id: string) => void;
   onReorder: (activeId: string, overId: string) => void;
 };
 
-export function TimelineSection({ clips, selectedId, onSelect, onContext, onReorder }: TimelineSectionProps) {
+export function TimelineSection({ clips, selectedId, disabled, onSelect, onContext, onReorder }: TimelineSectionProps) {
   return (
     <section className="bg-slate-900 border border-slate-800 rounded-xl p-5">
       <h2 className="font-semibold mb-4 tracking-widest">
@@ -34,6 +35,7 @@ export function TimelineSection({ clips, selectedId, onSelect, onContext, onReor
           <div className="flex gap-4 overflow-x-auto scroll-bar items-start py-2">
             {clips.map((clip) => (
               <SortableClip key={clip.id} clip={clip} isSelected={clip.id === selectedId}
+              disabled={disabled}
                 onSelect={() => onSelect(clip.id)}
                 onContext={(e) => {
                   e.preventDefault()
