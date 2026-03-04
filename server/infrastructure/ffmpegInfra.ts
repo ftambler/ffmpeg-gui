@@ -40,7 +40,10 @@ export function runFFmpeg(
       }
     });
 
-    ffmpeg.stderr.on("data", () => { });
+    // DEBUG LOGS
+    // ffmpeg.stderr.on("data", (chunk) => {
+    //   console.error(chunk.toString());
+    // });
 
     ffmpeg.on("close", (code) => {
       if (code === 0) resolve();
