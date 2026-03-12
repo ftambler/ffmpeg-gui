@@ -102,9 +102,9 @@ export function TrimPopup({ clip, draft, onChange, onCancel, onApply }: TrimPopu
                 </button>
               </div>
 
-              <div className="relative w-full h-6 bg-slate-800 rounded-md">
+              <div className="relative w-full h-5 bg-slate-800 rounded-md">
                 <div
-                  className="absolute h-6 bg-blue-400/40 rounded-md"
+                  className="absolute h-5 bg-blue-400/40 rounded-md"
                   style={{
                     left: `${(start / timelineScale) * 100}%`,
                     width: `${((end - start) / timelineScale) * 100}%`,
