@@ -1,5 +1,5 @@
 import { runFFmpeg } from "../infrastructure/ffmpegInfra.js";
-import { hasNvenc } from "../utils/nvencChecker.js";
+import { buildVideoEncoderArgs } from "./encoderService.js";
 
 
 type TrimOptions = {
@@ -10,25 +10,6 @@ type TrimOptions = {
   reencode?: boolean;
   onProgress?: (data: Record<string, string>) => void;
 };
-
-const useNvenc = hasNvenc();
-
-function buildVideoEncoderArgs() {
-  if (useNvenc) {
-    console.log("Using nvenc")
-    return [
-      "-c:v", "h264_nvenc",
-      "-preset", "p4",
-      "-cq", "23"
-    ];
-  }
-
-  return [
-    "-c:v", "libx264",
-    "-preset", "ultrafast",
-    "-crf", "23"
-  ];
-}
 
 export async function trimVideo({ inputPath, outputPath, start, end, reencode = true, onProgress }: TrimOptions): Promise<void> {
   const args = reencode

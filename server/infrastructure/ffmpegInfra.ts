@@ -4,6 +4,16 @@ type RunOptions = {
   onProgress?: (data: Record<string, string>) => void;
 };
 
+
+export function getEncoders(): string[] {
+  const output = spawn("ffmpeg", ["-hide_banner", "-encoders"]).toString();
+  
+  return output
+    .split("\n")
+    .filter((line: string) => line.startsWith(" V"))
+    .map((line: string) => line.trim().split(/\s+/)[1]);
+}
+
 export function runFFmpeg(
   args: string[],
   options?: RunOptions
@@ -19,7 +29,7 @@ export function runFFmpeg(
 
     let currentBlock: Record<string, string> = {};
 
-    ffmpeg.stdout.on("data", (chunk) => {
+    ffmpeg.stdout.on("data", (chunk: { toString: () => string; }) => {
       buffer += chunk.toString();
       const lines = buffer.split("\n");
       buffer = lines.pop() ?? "";
@@ -45,7 +55,7 @@ export function runFFmpeg(
     //   console.error(chunk.toString());
     // });
 
-    ffmpeg.on("close", (code) => {
+    ffmpeg.on("close", (code: number) => {
       if (code === 0) resolve();
       else reject(new Error(`FFmpeg exited with code ${code}`));
     });
