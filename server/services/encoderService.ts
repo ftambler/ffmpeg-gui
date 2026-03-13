@@ -7,7 +7,7 @@ const priority = [
   "h264_qsv",
   "h264_videotoolbox",
   "h264_amf",
-  "libx264"
+  "libx264",
 ];
 
 function detectBestEncoder(): string {
@@ -23,7 +23,8 @@ function detectBestEncoder(): string {
 export function getBestEncoder(): string {
   if (!cachedBestEncoder) {
     cachedBestEncoder = detectBestEncoder();
-    console.log("Selected encoder:", cachedBestEncoder);
+    const type = cachedBestEncoder === "libx264" ? "CPU" : "hardware";
+    console.log(`Selected ${type} encoder: ${cachedBestEncoder}`);
   }
 
   return cachedBestEncoder;
@@ -33,11 +34,11 @@ export function buildVideoEncoderArgs(): string[] {
   const encoder = getBestEncoder();
 
   const configs: Record<string, string[]> = {
-    h264_nvenc: ["-c:v", "h264_nvenc", "-preset", "p4", "-cq", "23"],
-    h264_qsv: ["-c:v", "h264_qsv", "-preset", "fast", "-global_quality", "23"],
+    h264_nvenc: ["-c:v", "h264_nvenc", "-preset", "p1", "-rc", "vbr", "-cq", "23", "-b:v", "0"],
+    h264_qsv: ["-c:v", "h264_qsv", "-global_quality", "23"],
     h264_videotoolbox: ["-c:v", "h264_videotoolbox", "-q:v", "65"],
-    h264_amf: ["-c:v", "h264_amf", "-quality", "speed"],
-    libx264: ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "23"]
+    h264_amf: ["-c:v", "h264_amf", "-rc", "vbr_peak", "-cq", "23"],
+    libx264: ["-c:v", "libx264", "-preset", "veryfast", "-crf", "23"]
   };
 
   return configs[encoder] ?? configs["libx264"];
