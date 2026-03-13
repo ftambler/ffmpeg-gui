@@ -1,13 +1,16 @@
-import { spawn } from "child_process";
+import { spawn, spawnSync } from "child_process";
 
 type RunOptions = {
   onProgress?: (data: Record<string, string>) => void;
 };
 
-
 export function getEncoders(): string[] {
-  const output = spawn("ffmpeg", ["-hide_banner", "-encoders"]).toString();
-  
+  const result = spawnSync("ffmpeg", ["-hide_banner", "-encoders"], {
+    encoding: "utf8"
+  });
+
+  const output = result.stdout ?? "";
+
   return output
     .split("\n")
     .filter((line: string) => line.startsWith(" V"))
