@@ -10,6 +10,8 @@ type TrimPopupProps = {
   onApply: () => void;
 };
 
+const STEP = 0.5;
+
 export function TrimPopup({ clip, draft, onChange, onCancel, onApply }: TrimPopupProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -87,9 +89,7 @@ export function TrimPopup({ clip, draft, onChange, onCancel, onApply }: TrimPopu
                     setEnd(d);
                   }
                 }}
-                onTimeUpdate={(e) =>
-                  setCurrentTime(e.currentTarget.currentTime)
-                }
+                onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
               />
 
               <div className="flex justify-end gap-3 mt-4">
@@ -122,28 +122,45 @@ export function TrimPopup({ clip, draft, onChange, onCancel, onApply }: TrimPopu
                   <label className="text-sm font-medium text-slate-300">
                     Start: {formatTime(start)}
                   </label>
-                  <input type="range" min={0} max={duration} step={0.01} value={start}
-                    onChange={(e) =>
-                      setStart(
-                        Math.min(Number(e.target.value), end - 0.1)
-                      )
-                    }
-                    className="w-full"
-                  />
+
+                  <div className="flex gap-2 items-center">
+                    <button
+                      type="button"
+                      onClick={() => setStart(Math.max(start - STEP, 0))}
+                      className="px-3 py-1 bg-slate-700 rounded">
+                      {`-${STEP}s`}
+                    </button>
+
+                    <input type="range" min={0} max={duration} step={0.01} value={start}
+                      onChange={(e) => setStart(Math.min(Number(e.target.value), end - 0.1))}
+                      className="w-full"
+                    />
+
+                    <button type="button" onClick={() => setStart(Math.min(start + STEP, end - 0.1))} className="px-3 py-1 bg-slate-700 rounded">
+                      {`+${STEP}s`}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-slate-300">
                     End: {formatTime(end)}
                   </label>
-                  <input type="range" min={0} max={duration} step={0.01} value={end}
-                    onChange={(e) =>
-                      setEnd(
-                        Math.max(Number(e.target.value), start + 0.1)
-                      )
-                    }
-                    className="w-full"
-                  />
+
+                  <div className="flex gap-2 items-center">
+                    <button type="button" onClick={() => setEnd(Math.max(end - STEP, start + 0.1))} className="px-3 py-1 bg-slate-700 rounded" >
+                      {`-${STEP}s`}
+                    </button>
+
+                    <input type="range" min={0} max={duration} step={0.01} value={end}
+                      onChange={(e) => setEnd(Math.max(Number(e.target.value), start + 0.1))}
+                      className="w-full"
+                    />
+
+                    <button type="button" onClick={() => setEnd(Math.min(end + STEP, duration))} className="px-3 py-1 bg-slate-700 rounded">
+                      {`+${STEP}s`}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
