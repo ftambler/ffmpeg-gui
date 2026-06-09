@@ -1,10 +1,10 @@
 name: Build & Push Docker Image
 
-# Trigger on push to main branch
 on:
   push:
     branches:
       - main
+      - develop
 
 jobs:
   build-and-push:
@@ -21,8 +21,17 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
+          
       # 3. Build and push Docker image
+      - name: Set Docker tag
+        id: tag
+        run: |
+          if [ "${GITHUB_REF##*/}" = "main" ]; then
+            echo "TAG=latest" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=develop" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -30,8 +39,8 @@ jobs:
           push: true
           tags: |
             ftambler/ffmpeg-gui:${{ github.sha }}
-            ftambler/ffmpeg-gui:latest
+            ftambler/ffmpeg-gui:${{ steps.tag.outputs.TAG }}
 
       # 4. Optional: display image digest
       - name: Show pushed image digest
-        run: docker inspect --format='{{index .RepoDigests 0}}' ftambler/ffmpeg-gui:latest
+        run: docker inspect --format='{{index .RepoDigests 0}}' ftambler/ffmpeg-gui:${{ steps.tag.outputs.TAG }}

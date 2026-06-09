@@ -1,4 +1,6 @@
 import { runFFmpeg } from "../infrastructure/ffmpegInfra.js";
+import { buildVideoEncoderArgs } from "./encoderService.js";
+
 
 type TrimOptions = {
   inputPath: string;
@@ -12,13 +14,12 @@ type TrimOptions = {
 export async function trimVideo({ inputPath, outputPath, start, end, reencode = true, onProgress }: TrimOptions): Promise<void> {
   const args = reencode
     ? [
-      "-i", inputPath,
       "-ss", start.toString(),
+      "-i", inputPath,
       "-t", (end - start).toString(),
-      "-c:v", "libx264",
+      ...buildVideoEncoderArgs(),
       "-c:a", "aac",
-      "-preset", "veryfast",
-      "-crf", "18",
+      "-b:a", "192k",
       "-movflags", "+faststart",
       "-y",
       outputPath
@@ -32,7 +33,7 @@ export async function trimVideo({ inputPath, outputPath, start, end, reencode = 
       outputPath
     ];
 
-  return runFFmpeg(args, {onProgress});
+  return runFFmpeg(args, { onProgress });
 }
 
 export async function concatVideos(

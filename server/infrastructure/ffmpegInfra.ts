@@ -1,8 +1,21 @@
-import { spawn } from "child_process";
+import { spawn, spawnSync } from "child_process";
 
 type RunOptions = {
   onProgress?: (data: Record<string, string>) => void;
 };
+
+export function getEncoders(): string[] {
+  const result = spawnSync("ffmpeg", ["-hide_banner", "-encoders"], {
+    encoding: "utf8"
+  });
+
+  const output = result.stdout ?? "";
+
+  return output
+    .split("\n")
+    .filter((line: string) => line.startsWith(" V"))
+    .map((line: string) => line.trim().split(/\s+/)[1]);
+}
 
 export function runFFmpeg(
   args: string[],
@@ -19,7 +32,7 @@ export function runFFmpeg(
 
     let currentBlock: Record<string, string> = {};
 
-    ffmpeg.stdout.on("data", (chunk) => {
+    ffmpeg.stdout.on("data", (chunk: { toString: () => string; }) => {
       buffer += chunk.toString();
       const lines = buffer.split("\n");
       buffer = lines.pop() ?? "";
@@ -40,9 +53,12 @@ export function runFFmpeg(
       }
     });
 
-    ffmpeg.stderr.on("data", () => { });
+    // DEBUG LOGS
+    // ffmpeg.stderr.on("data", (chunk) => {
+    //   console.error(chunk.toString());
+    // });
 
-    ffmpeg.on("close", (code) => {
+    ffmpeg.on("close", (code: number) => {
       if (code === 0) resolve();
       else reject(new Error(`FFmpeg exited with code ${code}`));
     });
