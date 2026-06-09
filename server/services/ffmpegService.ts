@@ -1,6 +1,5 @@
 import { runFFmpeg } from "../infrastructure/ffmpegInfra.js";
-import { buildVideoEncoderArgs } from "./encoderService.js";
-
+import { buildVideoEncoderArgs, invalidateEncoder } from "./encoderService.js";
 
 type TrimOptions = {
   inputPath: string;
@@ -11,13 +10,15 @@ type TrimOptions = {
   onProgress?: (data: Record<string, string>) => void;
 };
 
-export async function trimVideo({ inputPath, outputPath, start, end, reencode = true, onProgress }: TrimOptions): Promise<void> {
+async function executeTrim(options: TrimOptions, encoderArgs: string[]): Promise<void> {
+  const { inputPath, outputPath, start, end, reencode = true, onProgress } = options;
+
   const args = reencode
     ? [
       "-ss", start.toString(),
       "-i", inputPath,
       "-t", (end - start).toString(),
-      ...buildVideoEncoderArgs(),
+      ...encoderArgs,
       "-c:a", "aac",
       "-b:a", "192k",
       "-movflags", "+faststart",
@@ -36,10 +37,32 @@ export async function trimVideo({ inputPath, outputPath, start, end, reencode = 
   return runFFmpeg(args, { onProgress });
 }
 
-export async function concatVideos(
-  concatFilePath: string,
-  outputPath: string
-) {
+export async function trimVideo(options: TrimOptions): Promise<void> {
+  if (!options.reencode) {
+    return executeTrim(options, []);
+  }
+
+  try {
+    await executeTrim(
+      options,
+      buildVideoEncoderArgs()
+    );
+  } catch (error) {
+    console.warn(
+      "Hardware encoder failed. Falling back to libx264.",
+      error
+    );
+
+    invalidateEncoder();
+
+    await executeTrim(
+      options,
+      buildVideoEncoderArgs("libx264")
+    );
+  }
+}
+
+export async function concatVideos(concatFilePath: string, outputPath: string) {
   return runFFmpeg([
     "-f", "concat",
     "-safe", "0",
