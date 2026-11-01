@@ -6,10 +6,6 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - C:/Users/fede/Videos/GD:/video:ro
-      - C:/Users/fede/Videos/GD/Trimmed:/video/Trimmed
-    environment:
-      - INPUT_FOLDER=/video
-      - OUTPUT_FOLDER=/video/Trimmed
-      - TEMP_FOLDER=/tmp
+      - ${HOST_INPUT_FOLDER}:/video:ro
+      - ${HOST_OUTPUT_FOLDER}:/video/Trimmed
     restart: unless-stopped
