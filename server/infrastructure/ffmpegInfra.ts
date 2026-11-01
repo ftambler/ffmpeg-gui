@@ -54,9 +54,9 @@ export function runFFmpeg(
     });
 
     // DEBUG LOGS
-    // ffmpeg.stderr.on("data", (chunk) => {
-    //   console.error(chunk.toString());
-    // });
+    ffmpeg.stderr.on("data", (chunk) => {
+      console.error(chunk.toString());
+    });
 
     ffmpeg.on("close", (code: number) => {
       if (code === 0) resolve();

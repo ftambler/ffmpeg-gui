@@ -19,6 +19,10 @@ FROM node:20-alpine
 
 RUN apk add --no-cache ffmpeg
 
+ENV INPUT_FOLDER=/video \
+    OUTPUT_FOLDER=/video/Trimmed \
+    TEMP_FOLDER=/tmp
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./
